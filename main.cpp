@@ -57,30 +57,31 @@ list<labelledData> loadData(string& fileName) {
 	return data;
 }
 
-double distance(vector<double> a, vector<double> b) {
+double distance(vector<double> a, vector<double> b, list<int> features) {
 	if(a.size() != b.size()) {
 		cout << "MISMATCHING SIZES" << endl;
 		return 0;
 	}
 	double distance = 0;
 	for(int i = 0; i < a.size(); i++) {
+		if()
 		distance += pow(abs(a.at(i)-b.at(i)),2);
 	}
 	return sqrt(distance);
 }
 
-double nearestNeighbor(list<labelledData> data, vector<double> unlabelled) {
+double nearestNeighbor(list<labelledData> data, vector<double> unlabelled, list<int> features) {
 	double label = -1;
 	double minDistance = -1;
 	for(labelledData labelled:data) {
-		double currDistance = distance(labelled.features,unlabelled);
+		double currDistance = distance(labelled.features,unlabelled,features);
 		minDistance = min(minDistance,currDistance);
 		label = labelled.label;
 	}
 	return label;
 }
 
-double leaveOneOut(list<labelledData> data) {
+double leaveOneOut(list<labelledData> data, list<int> features) {
 	int correct = 0;
 	int total = data.size();
 	for(int i = 0; i < total; i++) {
@@ -88,10 +89,11 @@ double leaveOneOut(list<labelledData> data) {
 		labelledData current = data.front();
 		data.pop_front();
 		//Find label of nearest neighbor
-		double label = nearestNeighbor(data,current.features);
+		double label = nearestNeighbor(data,current.features,features);
 		if(label == current.label) {
 			correct++;
 		}
+		//Reinsert current element
 		data.push_back(current);
 	}
 	return (double)correct/(double)total;
