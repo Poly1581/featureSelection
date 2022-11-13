@@ -17,15 +17,8 @@ struct labelledData {
 	vector<double> features = {};
 };
 
-vector<vector<double>> loadData(string& fileName) {
+vector<labelledData> loadData(string& fileName) {
 	vector<labelledData> data;
-	ifstream dataFile;
-	dataFile.open(fileName);
-}
-
-vector<vector<double>> loadData(string& fileName) {
-	cout << "FILE NAME: " << fileName << endl;
-	vector<vector<double>> data = {};
 	ifstream dataFile;
 	dataFile.open(fileName);
 	if(!dataFile.is_open()) {
@@ -33,13 +26,15 @@ vector<vector<double>> loadData(string& fileName) {
 		return {};
 	}
 	string line = "";
-	int numInstance = 0;
+	double label = 0;
+	double feature = 0;
 	while(getline(dataFile, line)) {
-		vector<double> instance = {};
+		labelledData instance;
 		istringstream lineStream(line);
-		double value = 0;
-		while(lineStream >> value) {
-			instance.push_back(value);
+		lineStream >> label;
+		instance.label = label;
+		while(lineStream >> feature) {
+			instance.features.push_back(feature);
 		}
 		data.push_back(instance);
 	}
@@ -50,5 +45,14 @@ int main() {
 	cout << "Enter the name of the file containing the data which you wish to analyze" << endl;
 	string fileName  = "";
 	cin >> fileName;
-	vector<vector<double>> data = loadData(fileName);
-;}
+	vector<labelledData> data = loadData(fileName);
+	// for(labelledData instance:data) {
+	// 	cout << "LABEL: " << instance.label << endl;
+	// 	cout << "FEATURES: ";
+	// 	for(double feature:instance.features) {
+	// 		cout << feature << " ";
+	// 	}
+	// 	cout << endl;
+	// }
+	// cout << endl;
+}
