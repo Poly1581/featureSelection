@@ -1,5 +1,3 @@
-#include <list>
-using std::list;
 #include <vector>
 using std::vector;
 #include <string>
@@ -14,41 +12,49 @@ using std::ifstream;
 using std::getline;
 using std::istringstream;
 #include <cmath>
+using std::round;
 #include <algorithm>
-using std::min;
-using std::iterator;
-
+using std::find;
+#include <limits>
 
 //Struct to store label and features of labelled data seperately
 struct labelledData {
-	double label = 0;
+	int label = 0;
 	vector<double> features = {};
+	friend bool operator==(const labelledData& a, const labelledData& b) {
+		if(a.label != b.label) {
+			return false;
+		}
+		if(a.features.size() != b.features.size()) {
+			return false;
+		}
+		for(int f = 0; f < a.features.size(); f++) {
+			if(a.features.at(f) != b.features.at(f)) {
+				return false;
+			}
+		}
+		return true;
+	}
 };
 
 
 //Load labelled data from file
-list<labelledData> loadData(string& fileName) {
-	//Make list of labelled data and input stream to read from
-	list<labelledData> data;
+vector<labelledData> loadData(string& fileName) {
+	vector<labelledData> data;
 	ifstream dataFile;
 	dataFile.open(fileName);
-
-
 	if(!dataFile.is_open()) {
 		cout << "ERROR OPENING DATA FILE" << endl;
 		return {};
 	}
-
-
 	string line = "";
 	double label = 0;
 	double feature = 0;
-	//Read data line by line and add instances to vector
 	while(getline(dataFile, line)) {
 		labelledData instance;
 		istringstream lineStream(line);
 		lineStream >> label;
-		instance.label = label;
+		instance.label = (int)label;
 		while(lineStream >> feature) {
 			instance.features.push_back(feature);
 		}
@@ -57,61 +63,50 @@ list<labelledData> loadData(string& fileName) {
 	return data;
 }
 
-double distance(vector<double> a, vector<double> b, list<int> features) {
-	if(a.size() != b.size()) {
-		cout << "MISMATCHING SIZES" << endl;
-		return 0;
-	}
+
+//Calculate euclidean distance between two points for given features
+double distance(vector<double> a, vector<double> b, vector<int> features) {
 	double distance = 0;
 	for(int i = 0; i < a.size(); i++) {
-		if()
-		distance += pow(abs(a.at(i)-b.at(i)),2);
+		if(find(features.begin(),features.end(),i) != features.end()) {
+			distance += pow(a.at(i)-b.at(i),2);
+		}
 	}
 	return sqrt(distance);
 }
 
-double nearestNeighbor(list<labelledData> data, vector<double> unlabelled, list<int> features) {
-	double label = -1;
-	double minDistance = -1;
-	for(labelledData labelled:data) {
-		double currDistance = distance(labelled.features,unlabelled,features);
-		minDistance = min(minDistance,currDistance);
-		label = labelled.label;
+//Find label of nearest neighbor in data
+int nearestNeighbor(vector<labelledData> data, labelledData instance, vector<int> features) {
+	double minDistance = std::numeric_limits<double>::max();
+	int label = 0;
+	for(labelledData neighbor:data) {
+		if(neighbor == instance) {
+			continue;
+		}
+		double neighborDistance = distance(neighbor.features, instance.features, features);
+		if(neighborDistance < minDistance) {
+			minDistance = neighborDistance;
+			label = neighbor.label;
+		}
 	}
 	return label;
 }
 
-double leaveOneOut(list<labelledData> data, list<int> features) {
+//Evaluate feature accuracy
+double leaveOneOut(vector<labelledData> data, vector<int> features) {
 	int correct = 0;
-	int total = data.size();
-	for(int i = 0; i < total; i++) {
-		//Remove front element
-		labelledData current = data.front();
-		data.pop_front();
-		//Find label of nearest neighbor
-		double label = nearestNeighbor(data,current.features,features);
-		if(label == current.label) {
+	for(labelledData instance:data) {
+		if(instance.label == nearestNeighbor(data,instance,features)) {
 			correct++;
 		}
-		//Reinsert current element
-		data.push_back(current);
 	}
-	return (double)correct/(double)total;
+	return correct/(double)data.size();
 }
 
 int main() {
 	cout << "Enter the name of the file containing the data which you wish to analyze" << endl;
 	string fileName  = "";
 	cin >> fileName;
-	list<labelledData> data = loadData(fileName);
-
-	// for(labelledData instance:data) {
-	// 	cout << "LABEL: " << instance.label << endl;
-	// 	cout << "FEATURES: ";
-	// 	for(double feature:instance.features) {
-	// 		cout << feature << " ";
-	// 	}
-	// 	cout << endl;
-	// }
-	// cout << endl;
+	vector<labelledData> data = loadData(fileName);
+	cout << "FILE HAS " << data.size() << " INSTANCES" << endl;
 }
