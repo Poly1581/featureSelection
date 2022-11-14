@@ -16,24 +16,15 @@ using std::round;
 #include <algorithm>
 using std::find;
 #include <limits>
+#include <random>
+#include <chrono>
 
 //Struct to store label and features of labelled data seperately
 struct labelledData {
-	int label = 0;
+	bool label = false;
 	vector<double> features = {};
 	friend bool operator==(const labelledData& a, const labelledData& b) {
-		if(a.label != b.label) {
-			return false;
-		}
-		if(a.features.size() != b.features.size()) {
-			return false;
-		}
-		for(int f = 0; f < a.features.size(); f++) {
-			if(a.features.at(f) != b.features.at(f)) {
-				return false;
-			}
-		}
-		return true;
+		return (a.label == b.label) && (a.features == b.features);
 	}
 };
 
@@ -54,7 +45,11 @@ vector<labelledData> loadData(string& fileName) {
 		labelledData instance;
 		istringstream lineStream(line);
 		lineStream >> label;
-		instance.label = (int)label;
+		if((int)label == 1) {
+			instance.label = false;
+		} else {
+			instance.label = true;
+		};
 		while(lineStream >> feature) {
 			instance.features.push_back(feature);
 		}
@@ -76,15 +71,15 @@ double distance(vector<double> a, vector<double> b, vector<int> features) {
 }
 
 //Find label of nearest neighbor in data
-int nearestNeighbor(vector<labelledData> data, labelledData instance, vector<int> features) {
+bool nearestNeighbor(vector<labelledData> data, labelledData instance, vector<int> features) {
 	double minDistance = std::numeric_limits<double>::max();
-	int label = 0;
+	bool label = false;
 	for(labelledData neighbor:data) {
 		if(neighbor == instance) {
 			continue;
 		}
 		double neighborDistance = distance(neighbor.features, instance.features, features);
-		if(neighborDistance < minDistance) {
+		if(neighborDistance <= minDistance) {
 			minDistance = neighborDistance;
 			label = neighbor.label;
 		}
@@ -103,10 +98,78 @@ double leaveOneOut(vector<labelledData> data, vector<int> features) {
 	return correct/(double)data.size();
 }
 
+void displayVector(vector<int> features) {
+	cout << "{";
+	for(int f = 0; f < features.size()-1; f++) {
+		cout << features.at(f) << ", ";
+	}
+	cout << features.back() << "}";
+}
+
+void displayResult(vector<int> features, double accuracy) {
+	cout << "\tAccuracy using feature(s) ";
+	displayVector(features);
+	cout << " was " << round(accuracy*1000)/10 << endl;
+}
+
+void displayBest(vector<int> features, double accuracy) {
+	cout << "Accuracy of feature set ";
+	displayVector(features);
+	cout << " was best (" << round(accuracy*1000)/10 << ")" << endl;
+}
+
+//start with emtpy feature set and add
+void forwardSelection(vector<labelledData> data) {
+	vector<int> dataFeatures = {};
+	for(int f = 0; f < data.front().features.size(); f++) {
+		dataFeatures.push_back(f);
+	}
+	vector<int> features = {};
+	while(features.size() < dataFeatures.size()) {
+		double maxAccuracy = -1;
+		int bestFeature = -1;
+		for(int feature:dataFeatures) {
+			if(find(features.begin(), features.end(), feature) == features.end()) {
+				vector<int> newFeatures = features;
+				newFeatures.push_back(feature);
+				double accuracy = leaveOneOut(data,newFeatures);
+				displayResult(newFeatures,accuracy);
+				if(accuracy > maxAccuracy) {
+					maxAccuracy = accuracy;
+					bestFeature = feature;
+				}
+			}
+		}
+		features.push_back(bestFeature);
+		displayBest(features,maxAccuracy);
+	}
+}
+
+//start with full feature set and remove
+void backwardElimination(vector<labelledData> data) {
+
+}
+
 int main() {
 	cout << "Enter the name of the file containing the data which you wish to analyze" << endl;
 	string fileName  = "";
 	cin >> fileName;
 	vector<labelledData> data = loadData(fileName);
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(data.begin(), data.end(), std::default_random_engine(seed));
 	cout << "FILE HAS " << data.size() << " INSTANCES" << endl;
+	forwardSelection(data);
+	// for(labelledData instance:data) {
+	// 	if(instance.label) {
+	// 		cout << "LABEL: TRUE" << endl;
+	// 	} else {
+	// 		cout << "LABEL: FALSE" << endl;
+	// 	}
+	// 	for(double feature:instance.features) {
+	// 		cout << "\tFEATURE: " << feature << endl;
+	// 	}
+	// }
+	// cout << "ACCURACY USING FIRST FEATURE: " << leaveOneOut(data,{0}) << endl;
+	// cout << "ACCURACY USING SECOND FEATURE: " << leaveOneOut(data,{1}) << endl;
+	// cout << "ACCURACY USING BOTH FEATURES: " << leaveOneOut(data,{0,1}) << endl;
 }
