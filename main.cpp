@@ -14,6 +14,7 @@ using std::istringstream;
 #include <cmath>
 using std::round;
 #include <algorithm>
+using std::min;
 using std::find;
 #include <limits>
 #include <random>
@@ -125,8 +126,10 @@ void forwardSelection(vector<labelledData> data) {
 		dataFeatures.push_back(f);
 	}
 	vector<int> features = {};
-	while(features.size() < dataFeatures.size()) {
-		double maxAccuracy = -1;
+	double overallBestAccuracy = -1;
+	vector<int> overallBestFeatures = {};
+	while(features.size() < min((int)dataFeatures.size(),10)) {
+		double bestAccuracy = -1;
 		int bestFeature = -1;
 		for(int feature:dataFeatures) {
 			if(find(features.begin(), features.end(), feature) == features.end()) {
@@ -134,15 +137,20 @@ void forwardSelection(vector<labelledData> data) {
 				newFeatures.push_back(feature);
 				double accuracy = leaveOneOut(data,newFeatures);
 				displayResult(newFeatures,accuracy);
-				if(accuracy > maxAccuracy) {
-					maxAccuracy = accuracy;
+				if(accuracy > bestAccuracy) {
+					bestAccuracy = accuracy;
 					bestFeature = feature;
 				}
 			}
 		}
 		features.push_back(bestFeature);
-		displayBest(features,maxAccuracy);
+		displayBest(features,bestAccuracy);
+		if(bestAccuracy > overallBestAccuracy) {
+			overallBestAccuracy = bestAccuracy;
+			overallBestFeatures = features;
+		}
 	}
+	displayBest(overallBestFeatures,overallBestAccuracy);
 }
 
 //start with full feature set and remove
