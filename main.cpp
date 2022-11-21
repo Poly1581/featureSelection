@@ -100,22 +100,37 @@ void forwardSelection(vector<labelledData> data) {
 		double bestAccuracy = -1;
 		for(int f = 0; f < numFeatures; f++) {
 			if(features.count(f) == 0) {
-				features.insert(f);
-				double accuracy = leaveOneOut(data,features);
-				if(bestAccuracy < accuracy) {
-					bestAccuracy = accuracy;
-					bestFeature = f;
-				}
-				features.erase(f);
+				continue;
 			}
-			features.insert(bestFeature);
+			features.insert(f);
+			double accuracy = leaveOneOut(data,features);
+			if(bestAccuracy < accuracy) {
+				bestAccuracy = accuracy;
+				bestFeature = f;
+			}
+			features.erase();
 		}
+		features.insert(bestFeature);
 	}
 }
 
 //construct full feature set and remove
 void backwardElimination(vector<labelledData> data) {
+	int numFeatures = data.front().features.size();
 	set<int> features;
+	for(int f = 0; f < numFeatures; f++) {
+		features.insert(f);
+	}
+	for(int s = numFeatures; s > 0; s--) {
+		int bestFeature = -1;
+		double bestAccuracy = -1;
+		for(int f = 0; f < numFeatures; f++) {
+			if(features.count(f) == 0) {
+				continue;
+			}
+
+		}
+	}
 }
 
 //small 61, large 33
