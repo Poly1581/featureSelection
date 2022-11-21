@@ -25,6 +25,13 @@ struct labelledData {
 	}
 };
 
+void print(set<int> features) {
+	cout << " [ ";
+	for(int f:features) {
+		cout << f << " ";
+	}
+	cout << "]";
+}
 
 //Load labelled data from file
 vector<labelledData> loadData(string& fileName) {
@@ -104,12 +111,16 @@ void forwardSelection(vector<labelledData> data) {
 			}
 			features.insert(f);
 			double accuracy = leaveOneOut(data,features);
+			cout << "\tTesting feature set ";
+			print(features);
+			cout << ", accuracy was " << accuracy << endl;
 			if(bestAccuracy < accuracy) {
 				bestAccuracy = accuracy;
 				bestFeature = f;
 			}
 			features.erase(f);
 		}
+		cout << "Adding feature " << bestFeature << " was best, with accuracy " << bestAccuracy << endl;
 		features.insert(bestFeature);
 	}
 }
@@ -130,12 +141,16 @@ void backwardElimination(vector<labelledData> data) {
 			}
 			features.erase(f);
 			double accuracy = leaveOneOut(data,features);
+			cout << "\tTesting feature set ";
+			print(features);
+			cout << ", accuracy was " << accuracy << endl;
 			if(bestAccuracy < accuracy) {
 				bestAccuracy = accuracy;
 				bestFeature = f;
 			}
 			features.insert(f);
 		}
+		cout << "Removing feature " << bestFeature << " was best, with accuracy " << bestAccuracy << endl;
 		features.erase(bestFeature);
 	}
 }
