@@ -18,7 +18,7 @@ using std::min, std::find;
 
 //Struct to store label and features of labelled data seperately
 struct labelledData {
-	bool label = false;
+	int label = false;
 	vector<double> features = {};
 	friend bool operator==(const labelledData& a, const labelledData& b) {
 		return (a.label == b.label) && (a.features == b.features);
@@ -42,11 +42,7 @@ vector<labelledData> loadData(string& fileName) {
 		labelledData instance;
 		istringstream lineStream(line);
 		lineStream >> label;
-		if((int)label == 1) {
-			instance.label = false;
-		} else {
-			instance.label = true;
-		};
+		instance.label = (int)label;
 		while(lineStream >> feature) {
 			instance.features.push_back(feature);
 		}
@@ -68,9 +64,9 @@ double distance(vector<double> a, vector<double> b, set<int> features) {
 }
 
 //Find label of nearest neighbor in data
-bool nearestNeighbor(vector<labelledData> data, labelledData instance, set<int> features) {
+int nearestNeighbor(vector<labelledData> data, labelledData instance, set<int> features) {
 	double minDistance = std::numeric_limits<double>::max();
-	bool label = false;
+	int label = -1;
 	for(labelledData neighbor:data) {
 		if(neighbor == instance) {
 			continue;
