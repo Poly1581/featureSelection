@@ -97,8 +97,24 @@ double leaveOneOut(vector<labelledData> data, set<int> features) {
 
 //construct empty features set and add
 void forwardSelection(vector<labelledData> data) {
+	int numFeatures = data.front().features.size();
 	set<int> features;
-
+	for(int s = 0; s < numFeatures; s++) {
+		int bestFeature = -1;
+		double bestAccuracy = -1;
+		for(int f = 0; f < numFeatures; f++) {
+			if(features.count(f) == 0) {
+				features.insert(f);
+				double accuracy = leaveOneOut(data,features);
+				if(bestAccuracy < accuracy) {
+					bestAccuracy = accuracy;
+					bestFeature = f;
+				}
+				features.erase(f);
+			}
+			features.insert(bestFeature);
+		}
+	}
 }
 
 //construct full feature set and remove
