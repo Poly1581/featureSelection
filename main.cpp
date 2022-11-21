@@ -108,7 +108,7 @@ void forwardSelection(vector<labelledData> data) {
 				bestAccuracy = accuracy;
 				bestFeature = f;
 			}
-			features.erase();
+			features.erase(f);
 		}
 		features.insert(bestFeature);
 	}
@@ -128,8 +128,15 @@ void backwardElimination(vector<labelledData> data) {
 			if(features.count(f) == 0) {
 				continue;
 			}
-
+			features.erase(f);
+			double accuracy = leaveOneOut(data,features);
+			if(bestAccuracy < accuracy) {
+				bestAccuracy = accuracy;
+				bestFeature = f;
+			}
+			features.insert(f);
 		}
+		features.erase(bestFeature);
 	}
 }
 
