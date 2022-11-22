@@ -136,8 +136,10 @@ void forwardSelection(vector<labelledData> data) {
 			}
 			features.erase(f);
 		}
-		cout << "Adding feature " << bestFeature << " was best, with accuracy " << bestAccuracy << endl;
 		features.insert(bestFeature);
+		cout << "Feature set ";
+		print(features);
+		cout << " was best, with accuracy " << bestAccuracy << endl;
 		if(overallBestAccuracy < bestAccuracy) {
 			overallBestAccuracy = bestAccuracy;
 			bestFeatures = features;
@@ -145,7 +147,7 @@ void forwardSelection(vector<labelledData> data) {
 	}
 	cout << "Feature set ";
 	print(bestFeatures);
-	cout << " was best, with accuracy " << overallBestAccuracy << endl;
+	cout << " was the best overall, with accuracy " << overallBestAccuracy << endl;
 }
 
 //construct full feature set and remove
@@ -157,7 +159,10 @@ void backwardElimination(vector<labelledData> data) {
 	}
 	set<int> bestFeatures = features;
 	double overallBestAccuracy = leaveOneOut(data,features);
-	for(int s = numFeatures; s > 0; s--) {
+	cout << "Full feature set ";
+	print(features);
+	cout << " has accuracy " << overallBestAccuracy << endl;
+	for(int s = numFeatures; s > 1; s--) {
 		int bestFeature = -1;
 		double bestAccuracy = -1;
 		for(int f = 0; f < numFeatures; f++) {
@@ -175,8 +180,10 @@ void backwardElimination(vector<labelledData> data) {
 			}
 			features.insert(f);
 		}
-		cout << "Removing feature " << bestFeature << " was best, with accuracy " << bestAccuracy << endl;
 		features.erase(bestFeature);
+		cout << "Feature set ";
+		print(features);
+		cout << " was best, with accuracy " << bestAccuracy << endl;
 		if(overallBestAccuracy < bestAccuracy) {
 			overallBestAccuracy = bestAccuracy;
 			bestFeatures = features;
@@ -184,7 +191,7 @@ void backwardElimination(vector<labelledData> data) {
 	}
 	cout << "Feature set ";
 	print(bestFeatures);
-	cout << " was best, with accuracy " << overallBestAccuracy << endl;
+	cout << " was the best overall, with accuracy " << overallBestAccuracy << endl;
 }
 
 //small 61, large 33
